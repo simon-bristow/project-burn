@@ -23,6 +23,8 @@ The game only *reads* from the trainer. It never changes resistance, so you set 
 3. Set your **FTP** in the tuning panel. By default the ship hovers at 60% of FTP.
 4. Press **Start** or **Enter**. You get a 5-second countdown to spin up.
 
+The first minute and a half is a straight **practice stretch** with nothing to hit, only a cavern that gently narrows and widens. Use it to get a feel for the ship and adjust the tuning before the obstacles and climbs start.
+
 Pedal above your hover effort to climb, and ease off or freewheel to sink. Each climb shows the effort it needs, such as "▲ climb · 190 W · 12 s", so you can see it coming.
 
 | Key | Action |

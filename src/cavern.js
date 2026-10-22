@@ -18,12 +18,14 @@ export const COLONY_WIDTH = 0.14;
 export const COLONY_HEIGHT = 0.035;
 const COLONY_CHANCE = 0.5; // share of random cruise sections with a colony
 
-// Every cavern opens the same way so the rider can find the feel: a flat run
-// with a couple of mines, two moderate climbs (with the first colony between
-// them), then the first big climb. After that, sections are picked at random
-// by SECTION_WEIGHTS.
+// Every cavern opens the same way so the rider can find the feel: about 90 s
+// of straight, empty practice cavern that gently narrows and widens, a flat
+// run with a couple of mines, two moderate climbs (with the first colony
+// between them), then the first big climb. After that, sections are picked at
+// random by SECTION_WEIGHTS.
 const WARM_UP = [
-  { kind: 'cruise', steps: 10, wobble: 0.02, gap: 0.85, obstacles: ['mine'], count: 2, clearSeconds: 8, mineBand: [0.42, 0.58] },
+  { kind: 'practice', stepSeconds: 7, gaps: [0.9, 0.9, 0.8, 0.9, 0.75, 0.85, 0.7, 0.85, 0.65, 0.8, 0.6, 0.8, 0.8] },
+  { kind: 'cruise', steps: 10, wobble: 0.02, gap: 0.85, obstacles: ['mine'], count: 2, clearSeconds: 4, mineBand: [0.42, 0.58] },
   { kind: 'ramp', effort: [1.08, 1.12], seconds: [6, 8], gap: 0.7, count: 0 },
   { kind: 'cruise', steps: 3, wobble: 0.01, gap: 0.8, obstacles: ['colony', 'mine'], count: 2 },
   { kind: 'ramp', effort: [1.18, 1.25], seconds: [8, 10], gap: 0.65, count: 0 },
@@ -182,7 +184,12 @@ export class Cavern {
     const start = this.lastKey;
     let { floor, gap } = start;
 
-    if (kind === 'cruise') {
+    if (kind === 'practice') {
+      // Straight centre line; only the gap breathes in and out.
+      const mid = floor + gap / 2;
+      for (const g of spec.gaps) this.push(spec.stepSeconds, mid - g / 2, g);
+      this.sections.push({ kind: 'practice', x0: start.x + 0.3, len: this.lastKey.x - start.x, slope: 0 });
+    } else if (kind === 'cruise') {
       const steps = spec.steps ?? Math.round(this.rand(3, 5));
       const wobble = spec.wobble ?? 0.08;
       for (let i = 0; i < steps; i++) {
