@@ -232,7 +232,7 @@ export class Renderer {
       if (sec.kind === 'climb') {
         const vy = sec.slope * settings.scrollSpeed;
         const n = Math.pow(ratioForClimb(vy, settings), 1 / settings.curve);
-        text = `▲ climb · ${formatEffort(n * hoverPoint(settings), settings.source)} · ${seconds} s`;
+        text = `▲ climb · ${Math.round(n * hoverPoint(settings))} W · ${seconds} s`;
         ctx.fillStyle = COLORS.amber;
       } else if (sec.kind === 'coast') {
         text = `▼ coast · ${seconds} s`;
@@ -431,10 +431,4 @@ export class Renderer {
     ctx.fillText(subtitle, view.x + view.w / 2, view.y + view.h / 2 + size * 0.9);
     ctx.restore();
   }
-}
-
-export function formatEffort(value, source) {
-  if (source === 'power') return `${Math.round(value)} W`;
-  if (source === 'cadence') return `${Math.round(value)} rpm`;
-  return `${value.toFixed(1)} km/h`;
 }

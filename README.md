@@ -34,7 +34,6 @@ Pedal above your hover effort to climb, and ease off or freewheel to sink. Each 
 | B | Drop bomb (one at a time) |
 | P | Pause / resume |
 | T | Show or hide the tuning panel |
-| 1 / 2 / 3 | Steer by power, cadence or speed |
 | C | Connect trainer |
 | Z | Pedal (keyboard simulator) |
 | ↑ / ↓ | Simulator watts |

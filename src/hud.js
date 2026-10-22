@@ -1,7 +1,13 @@
 // Readouts, thrust bar, survival stats, connection status, and the feel trace.
 
 import { COLORS } from './render.js';
-import { SOURCES } from './tuning.js';
+
+// Power steers the ship and is shown large; cadence and speed are for reference.
+const READOUTS = [
+  { key: 'power', label: 'power', unit: 'W', main: true },
+  { key: 'cadence', label: 'cadence', unit: 'rpm' },
+  { key: 'speed', label: 'speed', unit: 'km/h', digits: 1 },
+];
 
 const FONT = 'system-ui, -apple-system, sans-serif';
 const TRACE_SECONDS = 20;
@@ -14,7 +20,6 @@ const KEY_HELP = [
   ['↑ ↓', 'sim watts'],
   ['Space', 'fire missile'],
   ['B', 'drop bomb'],
-  ['1 2 3', 'input source'],
   ['P', 'pause'],
   ['T', 'tuning panel'],
   ['K', 'simulator on/off'],
@@ -53,10 +58,6 @@ function formatDistance(units) {
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(2)} km`;
 }
 
-function formatValue(source, v) {
-  return source === 'speed' ? v.toFixed(1) : String(Math.round(v));
-}
-
 export function drawHud(ctx, r, d) {
   const s = Math.max(0.75, Math.min(1.3, d.H / 900));
   const x = r.x;
@@ -64,22 +65,21 @@ export function drawHud(ctx, r, d) {
   ctx.save();
   ctx.textBaseline = 'alphabetic';
 
-  for (const [key, { label, unit }] of Object.entries(SOURCES)) {
-    const active = key === d.source;
+  for (const { key, label, unit, main, digits = 0 } of READOUTS) {
     ctx.font = font(13 * s);
-    ctx.fillStyle = active ? COLORS.accentText : COLORS.muted;
+    ctx.fillStyle = main ? COLORS.accentText : COLORS.muted;
     y += 14 * s;
-    ctx.fillText(active ? `${label.toLowerCase()} · active` : label.toLowerCase(), x, y);
+    ctx.fillText(label, x, y);
 
-    const size = (active ? 64 : 30) * s;
+    const size = (main ? 64 : 30) * s;
     y += size * 0.95;
     ctx.font = font(size, 500);
-    ctx.fillStyle = active ? COLORS.accentText : COLORS.soft;
-    const text = formatValue(key, d.latest[key]);
+    ctx.fillStyle = main ? COLORS.accentText : COLORS.soft;
+    const text = d.latest[key].toFixed(digits);
     ctx.fillText(text, x, y);
     const width = ctx.measureText(text).width;
     ctx.font = font(15 * s);
-    ctx.fillStyle = active ? COLORS.accentText : COLORS.muted;
+    ctx.fillStyle = main ? COLORS.accentText : COLORS.muted;
     ctx.fillText(unit, x + width + 6 * s, y);
     y += 14 * s;
   }

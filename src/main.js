@@ -1,4 +1,4 @@
-import { settings, save, hoverPoint, TuningPanel, SOURCES } from './tuning.js';
+import { settings, save, hoverPoint, TuningPanel } from './tuning.js';
 import { Input } from './input.js';
 import { Sim } from './sim.js';
 import { Trainer } from './trainer.js';
@@ -140,8 +140,6 @@ function connection() {
   return { label: 'Not connected', color: COLORS.line };
 }
 
-const sourceKeys = Object.keys(SOURCES);
-
 addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   const onSlider = document.activeElement?.type === 'range';
@@ -172,9 +170,7 @@ addEventListener('keydown', (e) => {
     panel.refresh();
     return;
   }
-  const digit = Number(e.key);
-  if (digit >= 1 && digit <= sourceKeys.length) panel.setSource(sourceKeys[digit - 1]);
-  else if (e.key === 'p' || e.key === 'P') togglePause();
+  if (e.key === 'p' || e.key === 'P') togglePause();
   else if (e.key === 't' || e.key === 'T') { panel.toggle(); placeStatus(); }
   else if (e.key === 'k' || e.key === 'K') { if (trainer.state !== 'connected') setSim(!simActive); }
   else if (e.key === 'c' || e.key === 'C') connectTrainer();
@@ -255,7 +251,6 @@ function frame(now) {
   renderer.drawWorld({ view: layout.view, game, settings, alpha: acc / PHYSICS_STEP, t, dt });
   drawHud(ctx, layout.hud, {
     H: innerHeight,
-    source: settings.source,
     latest: input.latest,
     thrustRatio: ship.thrustRatio,
     v: ship.v,

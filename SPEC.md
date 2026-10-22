@@ -14,7 +14,7 @@ This is a feel test and nothing more. There are no levels, no enemies and no sco
 | Topic | Decision |
 |---|---|
 | Platform | Single web page in Chrome on macOS, using Web Bluetooth. No build step. |
-| Input signal | Read power, cadence and speed, and switch between them live. |
+| Input signal | **Power only** steers the ship. Cadence and speed are still read and shown in the HUD for reference. (Earlier prototypes let you switch between all three; that option was removed after testing.) |
 | Physics | Thrust vs gravity, with momentum. Steady effort lets you hover. |
 | Tuning | On-screen sliders and a live readout. Settings persist between sessions. |
 | Trainer resistance | Read-only. The game never writes to the trainer; you vary effort with your gears. |
@@ -122,17 +122,14 @@ Toggle with **T**. The panel docks on the right and uses large sliders (at least
 
 | Control | Default | Range | Notes |
 |---|---|---|---|
-| Input source | Power | Power / Cadence / Speed | Can also be changed with keys **1 / 2 / 3** |
 | FTP | 250 W | 100–450 W | Your functional threshold power |
-| Hover point (Power) | 60% FTP | 30–100% FTP | Shown in both % and W (60% of 250 W = 150 W) |
-| Hover point (Cadence) | 80 rpm | 40–120 rpm | |
-| Hover point (Speed) | 25 km/h | 10–50 km/h | |
+| Hover point | 60% FTP | 30–100% FTP | Shown in both % and W (60% of 250 W = 150 W) |
 | Gravity | 0.6 box/s² | 0.1–2.0 | Higher values feel heavier and twitchier |
 | Drag | 0.8 /s | 0–3 | Higher values give a lower terminal velocity and a "thicker air" feel |
 | Smoothing | 0.3 s | 0–2 s | 0 uses the raw trainer steps |
 | Response curve | 1.0 | 0.5–2.5 | Thrust = (effort ÷ hover) ^ curve. Above 1: small changes in effort around hover have a bigger effect (twitchier, and sprints hit hard). Below 1: calmer, finer control. |
 | Max thrust | 3.0 × g | 1–6 | Caps how hard a sprint can launch the ship |
-| Deadband | 15 W / 20 rpm / 3 km/h | per source | Below this counts as freewheeling |
+| Deadband | 15 W | 0–60 W | Below this counts as freewheeling |
 | Sim watts | 200 W | 50–600 W | Keyboard simulator only |
 
 - Settings are saved in the browser on every change and restored on load.
