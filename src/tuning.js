@@ -61,39 +61,136 @@ export function deadband(s) {
 
 const fixed = (digits, suffix = '') => (v) => `${v.toFixed(digits)}${suffix}`;
 
-// Hover and deadband rows follow the active source.
+// Hover and deadband rows follow the active source. `help` is the tooltip:
+// what moving the slider does to how the game plays.
 function rows(s) {
   const hover = {
-    power: { key: 'hoverPct', min: 30, max: 100, step: 1, fmt: (v) => `${v}% · ${Math.round((s.ftp * v) / 100)} W` },
-    cadence: { key: 'hoverCadence', min: 40, max: 120, step: 1, fmt: (v) => `${v} rpm` },
-    speed: { key: 'hoverSpeed', min: 10, max: 50, step: 0.5, fmt: fixed(1, ' km/h') },
+    power: {
+      key: 'hoverPct', min: 30, max: 100, step: 1, fmt: (v) => `${v}% · ${Math.round((s.ftp * v) / 100)} W`,
+      help: 'The power, as a share of your FTP, that holds the ship level. Ride above it to climb, below it to sink. Higher: the whole game takes harder work, climbs included. Lower: an easier ride.',
+    },
+    cadence: {
+      key: 'hoverCadence', min: 40, max: 120, step: 1, fmt: (v) => `${v} rpm`,
+      help: 'The cadence that holds the ship level. Spin faster to climb, slower to sink. Higher: you need to spin faster all the time. Lower: an easier spin.',
+    },
+    speed: {
+      key: 'hoverSpeed', min: 10, max: 50, step: 0.5, fmt: fixed(1, ' km/h'),
+      help: 'The wheel speed that holds the ship level. Go faster to climb, slower to sink. Higher: you need to hold more speed all the time. Lower: an easier ride.',
+    },
   }[s.source];
+  const unit = SOURCES[s.source].unit;
   const dead = {
     power: { key: 'deadPower', min: 0, max: 60, step: 1, fmt: (v) => `${v} W` },
     cadence: { key: 'deadCadence', min: 0, max: 60, step: 1, fmt: (v) => `${v} rpm` },
     speed: { key: 'deadSpeed', min: 0, max: 15, step: 0.5, fmt: fixed(1, ' km/h') },
   }[s.source];
   return [
-    { key: 'scrollSpeed', label: 'Scroll speed', min: 0.1, max: 0.6, step: 0.02, fmt: fixed(2, ' /s') },
-    { key: 'viewHeight', label: 'View height (zoom)', min: 1, max: 3, step: 0.1, fmt: fixed(1) },
-    { key: 'ftp', label: 'FTP', min: 100, max: 450, step: 5, fmt: (v) => `${v} W` },
+    {
+      key: 'scrollSpeed', label: 'Scroll speed', min: 0.1, max: 0.6, step: 0.02, fmt: fixed(2, ' /s'),
+      help: 'How fast the cavern moves past. Higher: less time to react, and every climb needs more effort because you rise faster to keep up. Lower: more relaxed, and climbs get easier.',
+    },
+    {
+      key: 'viewHeight', label: 'View height (zoom)', min: 1, max: 3, step: 0.1, fmt: fixed(1),
+      help: 'How much cavern fits on screen. Higher zooms out: you see further ahead, but the ship and obstacles get smaller. Lower zooms in: a bigger ship, but less warning of what\'s coming.',
+    },
+    {
+      key: 'ftp', label: 'FTP', min: 100, max: 450, step: 5, fmt: (v) => `${v} W`,
+      help: 'Your functional threshold power. Hover is a share of it, so setting your real FTP makes every effort, climbs included, scale to you. Only matters when steering by power.',
+    },
     { ...hover, label: 'Hover' },
-    { key: 'gravity', label: 'Gravity', min: 0.1, max: 2, step: 0.05, fmt: fixed(2) },
-    { key: 'drag', label: 'Drag', min: 0, max: 3, step: 0.05, fmt: fixed(2) },
-    { key: 'smoothing', label: 'Smoothing', min: 0, max: 2, step: 0.05, fmt: fixed(2, ' s') },
-    { key: 'curve', label: 'Response curve', min: 0.5, max: 2.5, step: 0.05, fmt: fixed(2) },
-    { key: 'maxThrust', label: 'Max thrust', min: 1, max: 6, step: 0.1, fmt: fixed(1, ' g') },
-    { ...dead, label: 'Deadband' },
-    { key: 'simWatts', label: 'Sim watts', min: 50, max: 600, step: 10, fmt: (v) => `${v} W` },
+    {
+      key: 'gravity', label: 'Gravity', min: 0.1, max: 2, step: 0.05, fmt: fixed(2),
+      help: 'How hard the ship is pulled down. Higher: it climbs and falls faster for the same change in effort, so it\'s sharper and twitchier. Lower: floaty and forgiving, but slow to get going.',
+    },
+    {
+      key: 'drag', label: 'Drag', min: 0, max: 3, step: 0.05, fmt: fixed(2),
+      help: 'Air resistance. Higher: the ship settles quickly and drifts less, so it feels stable, but climbs need more effort. Lower: it keeps its momentum and overshoots, more like ice.',
+    },
+    {
+      key: 'smoothing', label: 'Smoothing', min: 0, max: 2, step: 0.05, fmt: fixed(2, ' s'),
+      help: 'Evens out jumpy trainer readings. Higher: a steadier ship, but it reacts later when you change effort. 0: raw trainer data, instant but jerky.',
+    },
+    {
+      key: 'curve', label: 'Response curve', min: 0.5, max: 2.5, step: 0.05, fmt: fixed(2),
+      help: 'How strongly thrust follows your effort around hover. 1: in proportion. Above 1: small changes in effort have a big effect, so it\'s twitchy and sprints hit hard. Below 1: calmer, finer control.',
+    },
+    {
+      key: 'maxThrust', label: 'Max thrust', min: 1, max: 6, step: 0.1, fmt: fixed(1, ' g'),
+      help: 'Caps how hard a big effort can push you up. Lower: a sprint can\'t rocket you into the ceiling. Higher: sprints climb steeply, which is handy for recovering, but easy to overdo.',
+    },
+    {
+      ...dead, label: 'Deadband',
+      help: `Anything under this many ${unit} counts as freewheeling, so you get no thrust. Raise it if soft pedalling or trainer noise keeps the flame flickering when you mean to coast.`,
+    },
+    {
+      key: 'simWatts', label: 'Sim watts', min: 50, max: 600, step: 10, fmt: (v) => `${v} W`,
+      help: 'Keyboard simulator only: the power you put out while holding Z. Also adjustable with the ↑ and ↓ keys.',
+    },
   ];
 }
+
+const SOURCE_HELP = {
+  power: 'Steer by power (key 1). Reacts fastest when you change effort, and is the most precise.',
+  cadence: 'Steer by cadence (key 2). Gear-independent, but the trainer averages it, so expect about a second of lag.',
+  speed: 'Steer by wheel speed (key 3). Follows the trainer\'s flywheel, which keeps spinning when you stop pedalling, so it feels floaty and slow to drop.',
+};
+
+const ACTION_HELP = {
+  'new-cavern': 'Generates a different cavern and returns to the Ready screen. Your score and distance start again.',
+  feedback: 'Opens a GitHub issue pre-filled with your settings and setup, so you can say how it felt.',
+  copy: 'Copies your current settings as text, so you can save or share a combination that works.',
+  reset: 'Puts every setting back to its default. Your current cavern carries on.',
+};
+
+const MIMIC_HELP = 'Keyboard simulator only: sends readings 4 times a second like a real trainer, so desk testing feels like riding. Untick for perfectly smooth input.';
 
 export class TuningPanel {
   constructor(el, { onNewCavern, onFeedback }) {
     this.el = el;
     this.onNewCavern = onNewCavern;
     this.onFeedback = onFeedback;
+    this.initTip();
     this.build();
+  }
+
+  // One shared tooltip, shown beside the panel (over the game) for whichever
+  // control is hovered or focused. It lives outside the panel because the
+  // panel scrolls and would clip it.
+  initTip() {
+    this.tip = document.createElement('div');
+    this.tip.id = 'tip';
+    this.tip.setAttribute('role', 'tooltip');
+    this.tip.hidden = true;
+    document.body.appendChild(this.tip);
+    const show = (e) => {
+      const target = e.target.closest?.('[data-help]');
+      if (target && this.el.contains(target)) this.showTip(target);
+    };
+    const hide = (e) => {
+      const from = e.target.closest?.('[data-help]');
+      const to = e.relatedTarget?.closest?.('[data-help]');
+      if (from && from !== to) this.hideTip();
+    };
+    this.el.addEventListener('pointerover', show);
+    this.el.addEventListener('pointerout', hide);
+    this.el.addEventListener('focusin', show);
+    this.el.addEventListener('focusout', hide);
+    this.el.addEventListener('scroll', () => this.hideTip());
+  }
+
+  showTip(target) {
+    this.tip.textContent = target.dataset.help;
+    this.tip.hidden = false;
+    const panel = this.el.getBoundingClientRect();
+    const anchor = target.getBoundingClientRect();
+    const tip = this.tip.getBoundingClientRect();
+    const top = Math.max(8, Math.min(innerHeight - tip.height - 8, anchor.top + anchor.height / 2 - tip.height / 2));
+    this.tip.style.left = `${Math.max(8, panel.left - tip.width - 12)}px`;
+    this.tip.style.top = `${top}px`;
+  }
+
+  hideTip() {
+    this.tip.hidden = true;
   }
 
   get open() {
@@ -102,6 +199,7 @@ export class TuningPanel {
 
   toggle() {
     this.el.classList.toggle('hidden');
+    this.hideTip();
   }
 
   setSource(source) {
@@ -127,9 +225,8 @@ export class TuningPanel {
     this.el.innerHTML = `
       <div class="panel-head"><h2>Tuning</h2><kbd>T</kbd></div>
       <div class="segmented" role="group" aria-label="Input source">
-        ${Object.entries(SOURCES).map(([key, { label }], i) => `
-          <button data-source="${key}" class="${key === settings.source ? 'active' : ''}"
-            title="Key ${i + 1}">${label}</button>`).join('')}
+        ${Object.entries(SOURCES).map(([key, { label }]) => `
+          <button data-source="${key}" class="${key === settings.source ? 'active' : ''}">${label}</button>`).join('')}
       </div>
       ${list.map((r) => `
         <label class="row">
@@ -149,6 +246,11 @@ export class TuningPanel {
       <p class="note" aria-live="polite"></p>`;
 
     this.rows = list;
+    this.hideTip();
+    this.el.querySelectorAll('.row').forEach((row, i) => { row.dataset.help = list[i].help; });
+    this.el.querySelector('.check').dataset.help = MIMIC_HELP;
+    for (const btn of this.el.querySelectorAll('[data-source]')) btn.dataset.help = SOURCE_HELP[btn.dataset.source];
+    for (const btn of this.el.querySelectorAll('[data-action]')) btn.dataset.help = ACTION_HELP[btn.dataset.action];
     for (const input of this.el.querySelectorAll('input[type=range]')) {
       this.paint(input);
       input.addEventListener('input', () => {

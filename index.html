@@ -38,6 +38,11 @@
     #start:hover { background: #1D9E75; }
     #start[hidden] { display: none; }
 
+    #tip { position: fixed; z-index: 10; width: 260px; box-sizing: border-box; padding: 10px 12px;
+      background: #232322; border: 1px solid #444441; border-radius: 8px; color: var(--soft);
+      font-size: 13px; line-height: 1.45; pointer-events: none; }
+    #tip[hidden] { display: none; }
+
     #panel { position: fixed; top: 16px; right: 16px; bottom: 16px; width: 288px; box-sizing: border-box;
       padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
       overflow-y: auto; font-size: 13px; }

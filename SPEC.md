@@ -130,7 +130,7 @@ Toggle with **T**. The panel docks on the right and uses large sliders (at least
 | Gravity | 0.6 box/s² | 0.1–2.0 | Higher values feel heavier and twitchier |
 | Drag | 0.8 /s | 0–3 | Higher values give a lower terminal velocity and a "thicker air" feel |
 | Smoothing | 0.3 s | 0–2 s | 0 uses the raw trainer steps |
-| Response curve | 1.0 | 0.5–2.5 | Above 1, the ship eases in gently near hover and responds hard to sprints |
+| Response curve | 1.0 | 0.5–2.5 | Thrust = (effort ÷ hover) ^ curve. Above 1: small changes in effort around hover have a bigger effect (twitchier, and sprints hit hard). Below 1: calmer, finer control. |
 | Max thrust | 3.0 × g | 1–6 | Caps how hard a sprint can launch the ship |
 | Deadband | 15 W / 20 rpm / 3 km/h | per source | Below this counts as freewheeling |
 | Sim watts | 200 W | 50–600 W | Keyboard simulator only |
