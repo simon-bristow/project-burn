@@ -5,7 +5,7 @@ import { Trainer } from './trainer.js';
 import { Game } from './game.js';
 import { thrustRatio } from './physics.js';
 import { Renderer, computeLayout, lookAhead, COLORS } from './render.js';
-import { drawHud, drawTrace, FeelTrace } from './hud.js';
+import { drawHud, drawTrace, FeelTrace, formatDistance } from './hud.js';
 
 const FEEDBACK_URL = 'https://github.com/simon-bristow/project-burn/issues/new';
 const PHYSICS_STEP = 1 / 120;
@@ -64,6 +64,17 @@ startButton.addEventListener('click', startGame);
 
 function playing() {
   return !ready && !paused && countdown === 0;
+}
+
+// Q ends the run and goes back to Ready on a fresh start of the same cavern,
+// keeping a summary of the run to show there.
+let lastRun = null;
+
+function quitRun() {
+  if (ready) return;
+  const { stats } = game;
+  lastRun = `${formatDistance(game.distance)} · score ${stats.score} · ${stats.crashes} crash${stats.crashes === 1 ? '' : 'es'}`;
+  game.reset(settings.seed);
 }
 
 function startGame() {
@@ -174,6 +185,7 @@ addEventListener('keydown', (e) => {
   else if (e.key === 't' || e.key === 'T') { panel.toggle(); placeStatus(); }
   else if (e.key === 'k' || e.key === 'K') { if (trainer.state !== 'connected') setSim(!simActive); }
   else if (e.key === 'c' || e.key === 'C') connectTrainer();
+  else if (e.key === 'q' || e.key === 'Q') quitRun();
 });
 
 // Resuming runs a countdown first; P during the countdown pauses again.
@@ -269,8 +281,11 @@ function frame(now) {
     simWatts: settings.simWatts,
   });
   drawTrace(ctx, layout.trace, trace);
-  if (ready) renderer.drawOverlay(layout.view, 'Ready', 'Connect and test your trainer, then press Enter or Start');
-  else if (paused) renderer.drawOverlay(layout.view, 'Paused', 'Press P to resume');
+  if (ready) {
+    renderer.drawOverlay(layout.view, 'Ready', lastRun
+      ? `Last run: ${lastRun}. Press Enter or Start to go again`
+      : 'Connect and test your trainer, then press Enter or Start');
+  } else if (paused) renderer.drawOverlay(layout.view, 'Paused', 'Press P to resume or Q to quit');
   else if (countdown > 0) renderer.drawOverlay(layout.view, String(Math.ceil(countdown)), 'Start pedalling');
 
   requestAnimationFrame(frame);

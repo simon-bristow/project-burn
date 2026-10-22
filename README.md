@@ -33,6 +33,7 @@ Pedal above your hover effort to climb, and ease off or freewheel to sink. Each 
 | Space | Fire missile (one at a time) |
 | B | Drop bomb (one at a time) |
 | P | Pause / resume |
+| Q | Quit the run and go back to the Ready screen (same cavern, fresh start) |
 | T | Show or hide the tuning panel |
 | C | Connect trainer |
 | Z | Pedal (keyboard simulator) |

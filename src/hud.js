@@ -21,6 +21,7 @@ const KEY_HELP = [
   ['Space', 'fire missile'],
   ['B', 'drop bomb'],
   ['P', 'pause'],
+  ['Q', 'quit run'],
   ['T', 'tuning panel'],
   ['K', 'simulator on/off'],
   ['C', 'connect trainer'],
@@ -53,7 +54,7 @@ function formatTime(seconds) {
 }
 
 // One world unit is shown as 50 m.
-function formatDistance(units) {
+export function formatDistance(units) {
   const m = units * 50;
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(2)} km`;
 }
