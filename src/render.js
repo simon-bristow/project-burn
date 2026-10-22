@@ -240,6 +240,9 @@ export class Renderer {
       } else if (sec.kind === 'practice') {
         text = `practice · ${seconds} s · find your hover, press T to tune`;
         ctx.fillStyle = COLORS.soft;
+      } else if (sec.kind === 'note') {
+        text = sec.text;
+        ctx.fillStyle = COLORS.soft;
       } else {
         text = `squeeze · ${seconds} s`;
         ctx.fillStyle = COLORS.soft;

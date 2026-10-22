@@ -18,17 +18,25 @@ export const COLONY_WIDTH = 0.14;
 export const COLONY_HEIGHT = 0.035;
 const COLONY_CHANCE = 0.5; // share of random cruise sections with a colony
 
-// Every cavern opens the same way so the rider can find the feel: about 90 s
-// of straight, empty practice cavern that gently narrows and widens, a flat
-// run with a couple of mines, two moderate climbs (with the first colony
-// between them), then the first big climb. After that, sections are picked at
-// random by SECTION_WEIGHTS.
+// Every cavern opens the same way, stepping the rider up one skill at a time:
+//   1. ~40 s of straight, empty cavern that gently narrows and widens (feel)
+//   2. ~24 s of flat cavern with mines and colonies at hover height (shooting)
+//   3. a gentle climb, a gentle coast, a short flat with targets (effort)
+//   4. a moderate climb, a moderate coast, a flat with a pillar
+//   5. the first big climb
+// After that, sections are picked at random by SECTION_WEIGHTS.
 const WARM_UP = [
-  { kind: 'practice', stepSeconds: 7, gaps: [0.9, 0.9, 0.8, 0.9, 0.75, 0.85, 0.7, 0.85, 0.65, 0.8, 0.6, 0.8, 0.8] },
-  { kind: 'cruise', steps: 10, wobble: 0.02, gap: 0.85, obstacles: ['mine'], count: 2, clearSeconds: 4, mineBand: [0.42, 0.58] },
-  { kind: 'ramp', effort: [1.08, 1.12], seconds: [6, 8], gap: 0.7, count: 0 },
-  { kind: 'cruise', steps: 3, wobble: 0.01, gap: 0.8, obstacles: ['colony', 'mine'], count: 2 },
+  { kind: 'practice', stepSeconds: 6, gaps: [0.9, 0.85, 0.8, 0.9, 0.75, 0.85, 0.85] },
+  {
+    kind: 'cruise', steps: 12, wobble: 0.01, gap: 0.85, clearSeconds: 3, mineBand: [0.42, 0.58],
+    obstacles: ['mine', 'colony', 'mine', 'colony', 'mine'], count: 5,
+    note: 'targets · Space shoots mines, B bombs colonies',
+  },
+  { kind: 'ramp', effort: [1.08, 1.12], seconds: [6, 8], gap: 0.75, count: 0 },
+  { kind: 'drop', fall: [0.25, 0.3], seconds: [4, 5], count: 0 },
+  { kind: 'cruise', steps: 3, wobble: 0.01, gap: 0.8, obstacles: ['mine', 'colony'], count: 2 },
   { kind: 'ramp', effort: [1.18, 1.25], seconds: [8, 10], gap: 0.65, count: 0 },
+  { kind: 'drop', fall: [0.35, 0.4], seconds: [4, 6], count: 0 },
   { kind: 'cruise', steps: 3, wobble: 0.03, gap: 0.8, obstacles: ['mine', 'pillar'], count: 2 },
   { kind: 'ramp', effort: [1.4, 1.5], seconds: [12, 15], gap: 0.6, count: 0 },
 ];
@@ -198,6 +206,7 @@ export class Cavern {
         this.push(2, floor, gap);
       }
       const clear = (spec.clearSeconds ?? 0) * s.scrollSpeed;
+      if (spec.note) this.sections.push({ kind: 'note', text: spec.note, x0: start.x + clear * 0.5, len: this.lastKey.x - start.x, slope: 0 });
       const kinds = spec.obstacles
         ?? (this.rng() < COLONY_CHANCE ? ['mine', 'colony', 'pillar', 'mine'] : ['mine', 'mine', 'pillar']);
       this.placeObstacles(start.x + clear, this.lastKey.x, kinds, spec.count, spec.mineBand);
@@ -234,15 +243,17 @@ export class Cavern {
       this.sections.push({ kind: 'squeeze', x0, len: x1 - x0, slope: 0 });
       this.push(1.5, floor - (wide - narrow) / 2, wide);
     } else {
-      gap = 0.65;
+      // Drop: a descent you follow by easing off. `fall` is the descent rate
+      // as a share of the ship's terminal fall speed.
+      gap = spec.gap ?? 0.65;
       const x0 = this.push(1, floor, gap);
       const top = floor;
-      const seconds = this.rand(3, 6);
-      floor -= terminalFall(s) * this.rand(0.3, 0.5) * seconds;
+      const seconds = this.rand(...(spec.seconds ?? [3, 6]));
+      floor -= terminalFall(s) * this.rand(...(spec.fall ?? [0.3, 0.5])) * seconds;
       const x1 = this.push(seconds, floor, gap);
       this.label('coast', x0, x1, top, floor);
       this.push(1, floor, gap);
-      this.placeObstacles(x0, x1, ['pillar']);
+      this.placeObstacles(x0, x1, ['pillar'], spec.count);
     }
   }
 
